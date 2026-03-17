@@ -91,7 +91,7 @@ function ScenarioSidebar({ scenario, concepts }) {
   );
 }
 
-export function ScenarioDeepDive({ state, dispatch, navigate, params, onRequestApiKey }) {
+export function ScenarioDeepDive({ state, dispatch, navigate, params }) {
   const [selectedId, setSelectedId] = useState(null);
   const [sessionActive, setSessionActive] = useState(false);
   const [showPostSession, setShowPostSession] = useState(false);
@@ -202,11 +202,9 @@ export function ScenarioDeepDive({ state, dispatch, navigate, params, onRequestA
         <div className="session-layout" style={{ flex: 1, overflow: 'hidden' }}>
           <div className="session-main">
             <ConversationInterface
-              apiKey={state.apiKey}
               systemPrompt={scenario ? getScenarioPrompt(scenario) : ''}
               initialMessage={`Begin the scenario deep dive for "${scenario?.name}". Present the initial high-level requirement incrementally.`}
               onCommand={handleCommand}
-              onRequestApiKey={onRequestApiKey}
               sessionActive={sessionActive}
               onEndSession={handleEndSession}
             />

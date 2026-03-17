@@ -3,11 +3,10 @@
 // ═══════════════════════════════════════════════════════
 
 import { useReducer } from 'react';
-import { loadState, saveState, loadApiKey, saveApiKey, clearApiKey, loadExtraState, saveExtraState } from '../lib/storage.js';
+import { loadState, saveState, loadExtraState, saveExtraState } from '../lib/storage.js';
 
 const initialState = () => ({
   ...loadState(),
-  apiKey: loadApiKey(),
   // Reference cache: { conceptId: { content, generatedAt } }
   referenceCache: loadExtraState('referenceCache', {}),
   // Exam intel cache: { content, generatedAt }
@@ -18,15 +17,6 @@ const initialState = () => ({
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'SET_API_KEY': {
-      if (action.key) {
-        saveApiKey(action.key);
-      } else {
-        clearApiKey();
-      }
-      return { ...state, apiKey: action.key };
-    }
-
     case 'UPDATE_CONCEPT_STAGE': {
       const { conceptId, stage } = action;
       const concept = state.concepts[conceptId];

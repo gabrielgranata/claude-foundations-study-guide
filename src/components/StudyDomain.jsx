@@ -86,7 +86,7 @@ function SessionSidebar({ domain, concepts, conceptsTouched }) {
   );
 }
 
-export function StudyDomain({ state, dispatch, navigate, params, onRequestApiKey }) {
+export function StudyDomain({ state, dispatch, navigate, params }) {
   const [selectedDomainId, setSelectedDomainId] = useState(params?.highlightDomain || null);
   const [sessionActive, setSessionActive] = useState(false);
   const [showPostSession, setShowPostSession] = useState(false);
@@ -209,11 +209,9 @@ export function StudyDomain({ state, dispatch, navigate, params, onRequestApiKey
         <div className="session-layout" style={{ flex: 1, overflow: 'hidden' }}>
           <div className="session-main">
             <ConversationInterface
-              apiKey={state.apiKey}
               systemPrompt={domain ? getStudyPrompt(domain) : ''}
               initialMessage={`Begin a domain study session for "${domain?.name}". Present an opening scenario that creates an encounter with one of the core concepts in this domain.`}
               onCommand={handleCommand}
-              onRequestApiKey={onRequestApiKey}
               conceptsTouched={conceptsTouched}
               sessionActive={sessionActive}
               onEndSession={handleEndSession}

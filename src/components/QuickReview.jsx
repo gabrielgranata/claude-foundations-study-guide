@@ -4,7 +4,7 @@ import { getDueConcepts, updateSM2, QUALITY_DESCRIPTIONS, formatNextReview } fro
 import { getReviewPrompt } from '../lib/prompts.js';
 import { callClaude, compactMessages } from '../lib/api.js';
 
-function ConceptReviewChat({ apiKey, concept, conceptDesc, systemPrompt, onDone, onRequestApiKey }) {
+function ConceptReviewChat({ concept, conceptDesc, systemPrompt, onDone }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
@@ -28,12 +28,11 @@ function ConceptReviewChat({ apiKey, concept, conceptDesc, systemPrompt, onDone,
   }, []);
 
   async function startReview() {
-    if (!apiKey) return;
     const openMsg = { role: 'user', content: 'Begin the review. Present a scenario.' };
     conversationRef.current = [openMsg];
     setThinking(true);
     try {
-      const response = await callClaude({ apiKey, systemPrompt, messages: conversationRef.current, maxTokens: 512 });
+      const response = await callClaude({ systemPrompt, messages: conversationRef.current, maxTokens: 512 });
       conversationRef.current.push({ role: 'assistant', content: response });
       setMessages([{ role: 'assistant', content: response, ts: Date.now() }]);
     } catch (e) {
@@ -46,7 +45,6 @@ function ConceptReviewChat({ apiKey, concept, conceptDesc, systemPrompt, onDone,
   async function handleSend() {
     const text = input.trim();
     if (!text || thinking) return;
-    if (!apiKey) { onRequestApiKey?.(); return; }
 
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: text, ts: Date.now() }]);
@@ -56,7 +54,7 @@ function ConceptReviewChat({ apiKey, concept, conceptDesc, systemPrompt, onDone,
     setThinking(true);
     setError('');
     try {
-      const response = await callClaude({ apiKey, systemPrompt, messages: conversationRef.current, maxTokens: 512 });
+      const response = await callClaude({ systemPrompt, messages: conversationRef.current, maxTokens: 512 });
       conversationRef.current.push({ role: 'assistant', content: response });
       setMessages(prev => [...prev, { role: 'assistant', content: response, ts: Date.now() }]);
       setTimeout(scrollToBottom, 50);
@@ -89,11 +87,6 @@ function ConceptReviewChat({ apiKey, concept, conceptDesc, systemPrompt, onDone,
           </div>
         )}
         {error && <div className="error-bar" style={{ margin: '12px 24px' }}>{error}</div>}
-        {!started && !apiKey && (
-          <div style={{ padding: '24px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
-            Configure an API key to begin review.
-          </div>
-        )}
       </div>
 
       <div className="input-bar">
@@ -151,7 +144,7 @@ function QualityRating({ onRate }) {
   );
 }
 
-export function QuickReview({ state, dispatch, navigate, onRequestApiKey }) {
+export function QuickReview({ state, dispatch, navigate }) {
   const dueConcepts = getDueConcepts(state.concepts);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [phase, setPhase] = useState('chat'); // 'chat' | 'rate'
@@ -307,12 +300,10 @@ export function QuickReview({ state, dispatch, navigate, onRequestApiKey }) {
       {phase === 'chat' ? (
         <div style={{ flex: 1, overflow: 'hidden' }}>
           <ConceptReviewChat
-            apiKey={state.apiKey}
             concept={concept}
             conceptDesc={conceptData?.description || concept.id}
             systemPrompt={systemPrompt}
             onDone={handleConceptDone}
-            onRequestApiKey={onRequestApiKey}
           />
         </div>
       ) : (

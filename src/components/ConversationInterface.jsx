@@ -37,11 +37,9 @@ function ThinkingIndicator() {
 }
 
 export function ConversationInterface({
-  apiKey,
   systemPrompt,
   initialMessage,
   onCommand,
-  onRequestApiKey,
   conceptsTouched,
   onConceptTouch,
   sessionActive,
@@ -73,11 +71,6 @@ export function ConversationInterface({
   }, [sessionActive]);
 
   async function startSession() {
-    if (!apiKey) {
-      setError('No API key configured. Click the key indicator in the sidebar to add one.');
-      return;
-    }
-
     const openingMsg = initialMessage || 'Begin the session. Present an opening scenario.';
     const userMsg = { role: 'user', content: openingMsg };
     conversationRef.current = [userMsg];
@@ -87,7 +80,6 @@ export function ConversationInterface({
 
     try {
       const response = await callClaude({
-        apiKey,
         systemPrompt,
         messages: conversationRef.current,
         maxTokens: 1024,
@@ -144,11 +136,6 @@ export function ConversationInterface({
     }
 
     // Regular message — send to API
-    if (!apiKey) {
-      onRequestApiKey?.();
-      return;
-    }
-
     const userDisplayMsg = { role: 'user', content: text, timestamp: Date.now() };
     setMessages(prev => [...prev, userDisplayMsg]);
 
@@ -163,7 +150,6 @@ export function ConversationInterface({
 
     try {
       const response = await callClaude({
-        apiKey,
         systemPrompt,
         messages: conversationRef.current,
         maxTokens: 1024,
@@ -208,7 +194,7 @@ export function ConversationInterface({
         <div className="conversation-messages">
           {messages.length === 0 && !thinking && !error && (
             <div style={{ padding: '32px 24px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
-              {apiKey ? 'Initializing session...' : 'Configure an API key to begin.'}
+              'Initializing session...'
             </div>
           )}
 

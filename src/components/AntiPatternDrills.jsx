@@ -130,7 +130,7 @@ function DrillSidebar({ ap, concepts }) {
   );
 }
 
-export function AntiPatternDrills({ state, dispatch, navigate, params, onRequestApiKey }) {
+export function AntiPatternDrills({ state, dispatch, navigate, params }) {
   const [selectedId, setSelectedId] = useState(null);
   const [sessionActive, setSessionActive] = useState(false);
   const [showPostSession, setShowPostSession] = useState(false);
@@ -260,11 +260,9 @@ export function AntiPatternDrills({ state, dispatch, navigate, params, onRequest
             {/* Conversation */}
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--border)' }}>
               <ConversationInterface
-                apiKey={state.apiKey}
                 systemPrompt={ap ? getAntiPatternPrompt(ap) : ''}
                 initialMessage={`The student has been shown the ${ap?.id} code snippet. Ask them what they see — what's wrong with this code?`}
                 onCommand={handleCommand}
-                onRequestApiKey={onRequestApiKey}
                 sessionActive={sessionActive}
                 onEndSession={handleEndSession}
               />

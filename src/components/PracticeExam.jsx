@@ -319,7 +319,7 @@ function ExamResults({ questions, answers, onRestart, onHome, elapsedSeconds }) 
 }
 
 // ── Main PracticeExam view ────────────────────────────────
-export function PracticeExam({ state, dispatch, navigate, onRequestApiKey }) {
+export function PracticeExam({ state, dispatch, navigate }) {
   const [phase, setPhase] = useState('config'); // config | exam | results
   const [config, setConfig] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -341,7 +341,6 @@ export function PracticeExam({ state, dispatch, navigate, onRequestApiKey }) {
   }, [phase]);
 
   async function generateQuestion(cfg) {
-    if (!state.apiKey) { onRequestApiKey(); return null; }
     const systemPrompt = getPracticeQuestionPrompt(
       cfg.domainFilter,
       [],
@@ -349,7 +348,6 @@ export function PracticeExam({ state, dispatch, navigate, onRequestApiKey }) {
     );
     try {
       const raw = await callClaude({
-        apiKey: state.apiKey,
         systemPrompt,
         messages: [{ role: 'user', content: 'Generate the question.' }],
         maxTokens: 600,
@@ -367,7 +365,6 @@ export function PracticeExam({ state, dispatch, navigate, onRequestApiKey }) {
   }
 
   async function handleStart(cfg) {
-    if (!state.apiKey) { onRequestApiKey(); return; }
     setConfig(cfg);
     setPhase('exam');
     setStartTime(Date.now());

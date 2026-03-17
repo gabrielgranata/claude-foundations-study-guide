@@ -31,7 +31,7 @@ const NAV_SECTIONS = [
   },
 ];
 
-export function Sidebar({ currentView, navigate, state, onApiKeyClick }) {
+export function Sidebar({ currentView, navigate, state }) {
   const due = getDueConcepts(state.concepts);
   const dueCount = due.length;
 
@@ -72,13 +72,8 @@ export function Sidebar({ currentView, navigate, state, onApiKeyClick }) {
       </nav>
 
       <div className="sidebar-footer">
-        <div className="sidebar-key-status" onClick={onApiKeyClick}>
-          <div className={`sidebar-key-dot ${state.apiKey ? '' : 'missing'}`} />
-          {state.apiKey ? (
-            <span>···{state.apiKey.slice(-4)}</span>
-          ) : (
-            <span>No API key</span>
-          )}
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)' }}>
+          Bedrock · Sonnet
         </div>
       </div>
     </aside>

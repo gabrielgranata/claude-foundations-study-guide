@@ -9,44 +9,22 @@ import { QuickReview } from './components/QuickReview.jsx';
 import { LearnCenter } from './components/LearnCenter.jsx';
 import { Curriculum } from './components/Curriculum.jsx';
 import { PracticeExam } from './components/PracticeExam.jsx';
-import { ApiKeyModal } from './components/ApiKeyModal.jsx';
 
 export default function App() {
   const { state, dispatch } = useAppState();
-  const [view, setView] = useState('curriculum');   // start on Curriculum, not Dashboard
+  const [view, setView] = useState('curriculum');
   const [viewParams, setViewParams] = useState({});
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
   function navigate(newView, params = {}) {
     setView(newView);
     setViewParams(params);
   }
 
-  function handleApiKeySave(key) {
-    dispatch({ type: 'SET_API_KEY', key: key || null });
-    setShowApiKeyModal(false);
-  }
-
-  function handleRequestApiKey() {
-    setShowApiKeyModal(true);
-  }
-
-  const viewProps = {
-    state,
-    dispatch,
-    navigate,
-    params: viewParams,
-    onRequestApiKey: handleRequestApiKey,
-  };
+  const viewProps = { state, dispatch, navigate, params: viewParams };
 
   return (
     <div className="app-layout">
-      <Sidebar
-        currentView={view}
-        navigate={navigate}
-        state={state}
-        onApiKeyClick={() => setShowApiKeyModal(true)}
-      />
+      <Sidebar currentView={view} navigate={navigate} state={state} />
 
       <main className="app-main">
         {view === 'dashboard'    && <Dashboard      {...viewProps} />}
@@ -58,14 +36,6 @@ export default function App() {
         {view === 'exam'         && <PracticeExam   {...viewProps} key={JSON.stringify(viewParams)} />}
         {view === 'review'       && <QuickReview    {...viewProps} />}
       </main>
-
-      {showApiKeyModal && (
-        <ApiKeyModal
-          existingKey={state.apiKey}
-          onSave={handleApiKeySave}
-          onClose={() => setShowApiKeyModal(false)}
-        />
-      )}
     </div>
   );
 }

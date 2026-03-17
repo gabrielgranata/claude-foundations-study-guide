@@ -108,19 +108,17 @@ function inlineFormat(text) {
 }
 
 // ── Concept reference card ────────────────────────────────
-function ConceptReferenceCard({ conceptId, domainName, cachedRef, apiKey, onCache, onRequestApiKey, onStudy }) {
+function ConceptReferenceCard({ conceptId, domainName, cachedRef, onCache, onStudy }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const concept = CONCEPTS[conceptId];
 
   async function handleGenerate() {
-    if (!apiKey) { onRequestApiKey(); return; }
     setLoading(true);
     setError('');
     try {
       const systemPrompt = getReferencePrompt(conceptId, concept.description, domainName);
       const response = await callClaude({
-        apiKey,
         systemPrompt,
         messages: [{ role: 'user', content: 'Generate the reference.' }],
         maxTokens: 800,
@@ -187,18 +185,16 @@ function ConceptReferenceCard({ conceptId, domainName, cachedRef, apiKey, onCach
 }
 
 // ── Exam intel panel ──────────────────────────────────────
-function ExamIntelPanel({ examIntel, apiKey, onSet, onRequestApiKey }) {
+function ExamIntelPanel({ examIntel, onSet }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   async function handleGenerate() {
-    if (!apiKey) { onRequestApiKey(); return; }
     setLoading(true);
     setError('');
     try {
       const systemPrompt = getExamIntelPrompt();
       const response = await callClaude({
-        apiKey,
         systemPrompt,
         messages: [{ role: 'user', content: 'Generate the exam prep briefing.' }],
         maxTokens: 1200,
@@ -260,7 +256,7 @@ function ExamIntelPanel({ examIntel, apiKey, onSet, onRequestApiKey }) {
 }
 
 // ── Main LearnCenter view ─────────────────────────────────
-export function LearnCenter({ state, dispatch, navigate, onRequestApiKey }) {
+export function LearnCenter({ state, dispatch, navigate }) {
   const [tab, setTab] = useState('concepts'); // 'concepts' | 'intel'
   const [selectedDomainId, setSelectedDomainId] = useState(1);
   const [expandedConcepts, setExpandedConcepts] = useState(new Set());
@@ -439,9 +435,7 @@ export function LearnCenter({ state, dispatch, navigate, onRequestApiKey }) {
                               conceptId={id}
                               domainName={domain.name}
                               cachedRef={cached}
-                              apiKey={state.apiKey}
                               onCache={handleCache}
-                              onRequestApiKey={onRequestApiKey}
                               onStudy={handleStudy}
                             />
                           </div>
@@ -457,9 +451,7 @@ export function LearnCenter({ state, dispatch, navigate, onRequestApiKey }) {
           {tab === 'intel' && (
             <ExamIntelPanel
               examIntel={state.examIntel}
-              apiKey={state.apiKey}
               onSet={handleSetIntel}
-              onRequestApiKey={onRequestApiKey}
             />
           )}
         </div>
