@@ -1,6 +1,79 @@
-import { DOMAINS, CONCEPTS, STAGES } from '../data/knowledge.js';
+import { DOMAINS, CONCEPTS, STAGES, CURRICULUM_MODULES } from '../data/knowledge.js';
 import { getDueConcepts, formatNextReview } from '../lib/sm2.js';
 import { ConceptRow, StageSymbol } from './ConceptBadge.jsx';
+
+function getModuleStatus(module, concepts) {
+  const total = module.conceptIds.length;
+  const started = module.conceptIds.filter(id => (concepts[id]?.stage || 'UNSEEN') !== 'UNSEEN').length;
+  const integrated = module.conceptIds.filter(id => ['PATTERN', 'INTEGRATION'].includes(concepts[id]?.stage)).length;
+  if (integrated === total) return 'complete';
+  if (started > 0) return 'active';
+  return 'ready';
+}
+
+// Welcome banner for brand-new users
+function WelcomeBanner({ navigate }) {
+  return (
+    <div style={{ padding: '20px 24px', background: 'var(--accent-gold-dim)', borderBottom: '1px solid var(--accent-gold)' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', maxWidth: '800px' }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--accent-gold)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>
+            Welcome to your study guide
+          </div>
+          <div style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: '1.55', marginBottom: '12px' }}>
+            This tool builds genuine understanding of Claude architecture — not surface recall. The AI never gives you answers; it creates situations where you have to reason through them.
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+              <span style={{ color: 'var(--accent-gold)' }}>Start at Curriculum</span> to see the recommended study path.
+              Then <span style={{ color: 'var(--accent-gold)' }}>Learn Center</span> to read references before each Socratic session.
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+          <button className="btn btn-secondary" onClick={() => navigate('learn')}>
+            Learn Center
+          </button>
+          <button className="btn btn-primary" onClick={() => navigate('curriculum')}>
+            View Curriculum →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// "Continue" widget — shows what to do next
+function NextStepWidget({ concepts, navigate }) {
+  const nextModule = CURRICULUM_MODULES.find(m => {
+    const status = getModuleStatus(m, concepts);
+    return status === 'active';
+  }) || CURRICULUM_MODULES.find(m => getModuleStatus(m, concepts) === 'ready');
+
+  if (!nextModule) return null;
+
+  const status = getModuleStatus(nextModule, concepts);
+  const started = nextModule.conceptIds.filter(id => (concepts[id]?.stage || 'UNSEEN') !== 'UNSEEN').length;
+
+  return (
+    <div style={{ padding: '14px 18px', background: status === 'active' ? 'var(--accent-gold-dim)' : 'var(--bg-panel)', border: `1px solid ${status === 'active' ? 'var(--accent-gold)' : 'var(--border)'}`, borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: status === 'active' ? 'var(--accent-gold)' : 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2px' }}>
+          {status === 'active' ? 'Continue' : 'Up next'}
+        </div>
+        <div style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {nextModule.id}: {nextModule.title}
+        </div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+          {started}/{nextModule.conceptIds.length} concepts started · {nextModule.estimatedMinutes}min
+        </div>
+      </div>
+      <button className="btn btn-primary" style={{ flexShrink: 0 }} onClick={() => navigate('curriculum')}>
+        {status === 'active' ? 'Continue →' : 'Start →'}
+      </button>
+    </div>
+  );
+}
 
 const STAGE_ORDER = ['UNSEEN', 'ENCOUNTER', 'TENSION', 'PATTERN', 'INTEGRATION'];
 
@@ -91,8 +164,12 @@ export function Dashboard({ state, navigate }) {
   // Recent sessions
   const recentSessions = sessions.slice(0, 5);
 
+  const isNewUser = encountered === 0;
+
   return (
     <div className="view" style={{ padding: '0' }}>
+      {isNewUser && <WelcomeBanner navigate={navigate} />}
+
       <div className="view-header">
         <span className="view-title">
           <span>FORMATION</span> OVERVIEW
@@ -106,6 +183,8 @@ export function Dashboard({ state, navigate }) {
         {/* ── Formation domains ── */}
         <div className="dashboard-cell">
           <div className="cell-label">Domain Progress</div>
+
+          {!isNewUser && <NextStepWidget concepts={concepts} navigate={navigate} />}
 
           <div className="stats-row">
             <div className="stat-cell">

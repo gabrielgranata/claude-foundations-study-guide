@@ -271,3 +271,146 @@ All files must pass TypeScript strict checks before commit.
 # Contradiction: legacy/ can use JS but must pass TS strict?`,
   },
 ];
+
+// ── Curriculum: recommended study sequence ────────────────
+// Ordered by: exam weight × concept dependency depth
+// Start with the mechanisms that everything else builds on.
+
+export const CURRICULUM_MODULES = [
+  {
+    id: 'M1',
+    title: 'The Agentic Loop',
+    subtitle: 'How Claude actually runs — the fundamental cycle',
+    phase: 1,
+    phaseLabel: 'Foundation',
+    estimatedMinutes: 40,
+    domainIds: [1],
+    conceptIds: ['1.1', '1.6', '1.10'],
+    why: 'Everything else in the exam — tool use, multi-agent, session management — is built on the basic request/response/tool loop. If this mechanism is unclear, everything downstream will be shaky.',
+    prerequisiteIds: [],
+    docsLinks: [
+      { label: 'Tool use overview', url: 'https://docs.anthropic.com/en/docs/build-with-claude/tool-use' },
+      { label: 'Agents overview', url: 'https://docs.anthropic.com/en/docs/build-with-claude/computer-use' },
+    ],
+  },
+  {
+    id: 'M2',
+    title: 'Tool Design That Actually Works',
+    subtitle: 'Why tool descriptions and error handling make or break agents',
+    phase: 1,
+    phaseLabel: 'Foundation',
+    estimatedMinutes: 35,
+    domainIds: [2],
+    conceptIds: ['2.1', '2.2', '2.5', '2.7'],
+    why: 'Tool description quality directly affects whether the model selects the right tool. Structured error responses determine whether agents can recover from failures. These are tested heavily.',
+    prerequisiteIds: ['M1'],
+    docsLinks: [
+      { label: 'Tool use: defining tools', url: 'https://docs.anthropic.com/en/docs/build-with-claude/tool-use' },
+      { label: 'Error handling patterns', url: 'https://docs.anthropic.com/en/docs/build-with-claude/tool-use' },
+    ],
+  },
+  {
+    id: 'M3',
+    title: 'Multi-Agent Architecture',
+    subtitle: 'Coordinator-subagent patterns, task decomposition, isolation',
+    phase: 2,
+    phaseLabel: 'Architecture',
+    estimatedMinutes: 50,
+    domainIds: [1],
+    conceptIds: ['1.2', '1.3', '1.4', '1.5', '1.8', '1.9'],
+    why: 'Domain 1 is 27% of the exam. Multi-agent patterns — when to use them, how to isolate session state, how to handle errors across agent boundaries — are the most complex concepts here.',
+    prerequisiteIds: ['M1', 'M2'],
+    docsLinks: [
+      { label: 'Multi-agent systems', url: 'https://docs.anthropic.com/en/docs/build-with-claude/computer-use' },
+    ],
+  },
+  {
+    id: 'M4',
+    title: 'Claude Code Fundamentals',
+    subtitle: 'CLAUDE.md hierarchy, session management, plan mode',
+    phase: 2,
+    phaseLabel: 'Architecture',
+    estimatedMinutes: 40,
+    domainIds: [3],
+    conceptIds: ['3.1', '3.3', '3.4', '3.6', '3.7'],
+    why: 'Domain 3 is 20% of the exam. Claude Code has specific configuration semantics — CLAUDE.md hierarchy, path-specific rules, plan vs. execute mode — that are uniquely testable.',
+    prerequisiteIds: ['M1'],
+    docsLinks: [
+      { label: 'Claude Code overview', url: 'https://docs.anthropic.com/en/docs/claude-code/overview' },
+      { label: 'CLAUDE.md reference', url: 'https://docs.anthropic.com/en/docs/claude-code/memory' },
+      { label: 'Settings & config', url: 'https://docs.anthropic.com/en/docs/claude-code/settings' },
+    ],
+  },
+  {
+    id: 'M5',
+    title: 'Prompt Engineering That Scales',
+    subtitle: 'Structured output, few-shot patterns, system prompt design',
+    phase: 3,
+    phaseLabel: 'Engineering',
+    estimatedMinutes: 45,
+    domainIds: [4],
+    conceptIds: ['4.1', '4.2', '4.3', '4.5', '4.6', '4.7'],
+    why: 'Domain 4 is 20% of the exam. The exam heavily tests practical prompt patterns — when chain-of-thought helps vs. hurts, how to enforce structure via tool_use, validation-retry loops.',
+    prerequisiteIds: ['M2'],
+    docsLinks: [
+      { label: 'Prompt engineering', url: 'https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering' },
+      { label: 'Structured output', url: 'https://docs.anthropic.com/en/docs/build-with-claude/tool-use' },
+    ],
+  },
+  {
+    id: 'M6',
+    title: 'MCP & Advanced Tool Patterns',
+    subtitle: 'MCP servers, scoping, idempotency, dynamic registration',
+    phase: 3,
+    phaseLabel: 'Engineering',
+    estimatedMinutes: 35,
+    domainIds: [2],
+    conceptIds: ['2.3', '2.4', '2.6', '2.8'],
+    why: 'MCP is increasingly tested as it becomes core Anthropic infrastructure. Tool scoping (4-5 tools per agent) and idempotency distinctions appear in scenario questions.',
+    prerequisiteIds: ['M2', 'M3'],
+    docsLinks: [
+      { label: 'MCP overview', url: 'https://docs.anthropic.com/en/docs/mcp' },
+      { label: 'Claude Code MCP', url: 'https://docs.anthropic.com/en/docs/claude-code/mcp' },
+    ],
+  },
+  {
+    id: 'M7',
+    title: 'Context & Reliability',
+    subtitle: 'Context degradation, escalation, compaction, observability',
+    phase: 4,
+    phaseLabel: 'Reliability',
+    estimatedMinutes: 40,
+    domainIds: [5],
+    conceptIds: ['5.1', '5.2', '5.3', '5.5', '5.6', '5.7', '5.8'],
+    why: 'Domain 5 is 15% but contains some of the most nuanced concepts — the n² attention problem, graceful degradation strategies, human-in-the-loop design. High discriminator on the exam.',
+    prerequisiteIds: ['M3'],
+    docsLinks: [
+      { label: 'Context windows', url: 'https://docs.anthropic.com/en/docs/build-with-claude/context-windows' },
+      { label: 'Errors & reliability', url: 'https://docs.anthropic.com/en/docs/api/errors' },
+    ],
+  },
+  {
+    id: 'M8',
+    title: 'Claude Code in Production',
+    subtitle: 'CI/CD integration, headless mode, throughput patterns',
+    phase: 4,
+    phaseLabel: 'Reliability',
+    estimatedMinutes: 30,
+    domainIds: [3, 4],
+    conceptIds: ['3.2', '3.5', '3.8', '3.9', '4.4', '4.8', '4.9', '5.4'],
+    why: 'The exam tests operational patterns — running Claude Code non-interactively, batching for throughput, handling token budgets. These concepts appear in CI/CD and extraction scenarios.',
+    prerequisiteIds: ['M4', 'M5'],
+    docsLinks: [
+      { label: 'Claude Code CI/CD', url: 'https://docs.anthropic.com/en/docs/claude-code/github-actions' },
+      { label: 'Message Batches API', url: 'https://docs.anthropic.com/en/docs/build-with-claude/message-batches' },
+    ],
+  },
+];
+
+// Ordered list of phase labels for display
+export const CURRICULUM_PHASES = [
+  { id: 1, label: 'Foundation', description: 'The mechanisms everything builds on' },
+  { id: 2, label: 'Architecture', description: 'Multi-agent and configuration patterns' },
+  { id: 3, label: 'Engineering', description: 'Prompting and tool design at scale' },
+  { id: 4, label: 'Reliability', description: 'Production operations and edge cases' },
+];

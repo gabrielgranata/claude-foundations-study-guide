@@ -6,11 +6,14 @@ import { StudyDomain } from './components/StudyDomain.jsx';
 import { ScenarioDeepDive } from './components/ScenarioDeepDive.jsx';
 import { AntiPatternDrills } from './components/AntiPatternDrills.jsx';
 import { QuickReview } from './components/QuickReview.jsx';
+import { LearnCenter } from './components/LearnCenter.jsx';
+import { Curriculum } from './components/Curriculum.jsx';
+import { PracticeExam } from './components/PracticeExam.jsx';
 import { ApiKeyModal } from './components/ApiKeyModal.jsx';
 
 export default function App() {
   const { state, dispatch } = useAppState();
-  const [view, setView] = useState('dashboard');
+  const [view, setView] = useState('curriculum');   // start on Curriculum, not Dashboard
   const [viewParams, setViewParams] = useState({});
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
@@ -46,11 +49,14 @@ export default function App() {
       />
 
       <main className="app-main">
-        {view === 'dashboard'    && <Dashboard    {...viewProps} />}
-        {view === 'study'        && <StudyDomain  {...viewProps} key={JSON.stringify(viewParams)} />}
+        {view === 'dashboard'    && <Dashboard      {...viewProps} />}
+        {view === 'curriculum'   && <Curriculum     {...viewProps} />}
+        {view === 'learn'        && <LearnCenter    {...viewProps} key={viewParams?.highlightDomain} />}
+        {view === 'study'        && <StudyDomain    {...viewProps} key={JSON.stringify(viewParams)} />}
         {view === 'scenario'     && <ScenarioDeepDive {...viewProps} key={JSON.stringify(viewParams)} />}
         {view === 'antipattern'  && <AntiPatternDrills {...viewProps} key={JSON.stringify(viewParams)} />}
-        {view === 'review'       && <QuickReview  {...viewProps} />}
+        {view === 'exam'         && <PracticeExam   {...viewProps} key={JSON.stringify(viewParams)} />}
+        {view === 'review'       && <QuickReview    {...viewProps} />}
       </main>
 
       {showApiKeyModal && (

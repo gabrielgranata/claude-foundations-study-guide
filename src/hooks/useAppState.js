@@ -2,13 +2,18 @@
 // APP STATE — useReducer + localStorage sync
 // ═══════════════════════════════════════════════════════
 
-import { useReducer, useEffect, useCallback } from 'react';
-import { loadState, saveState, loadApiKey, saveApiKey, clearApiKey } from '../lib/storage.js';
-import { STAGE_ORDER } from '../data/knowledge.js';
+import { useReducer } from 'react';
+import { loadState, saveState, loadApiKey, saveApiKey, clearApiKey, loadExtraState, saveExtraState } from '../lib/storage.js';
 
 const initialState = () => ({
   ...loadState(),
   apiKey: loadApiKey(),
+  // Reference cache: { conceptId: { content, generatedAt } }
+  referenceCache: loadExtraState('referenceCache', {}),
+  // Exam intel cache: { content, generatedAt }
+  examIntel: loadExtraState('examIntel', null),
+  // Practice exam results: [{ questions, answers, score, completedAt, domainFilter }]
+  examResults: loadExtraState('examResults', []),
 });
 
 function reducer(state, action) {
@@ -90,6 +95,27 @@ function reducer(state, action) {
       };
       saveState(updated);
       return updated;
+    }
+
+    case 'CACHE_REFERENCE': {
+      const newCache = {
+        ...state.referenceCache,
+        [action.conceptId]: { content: action.content, generatedAt: new Date().toISOString() },
+      };
+      saveExtraState('referenceCache', newCache);
+      return { ...state, referenceCache: newCache };
+    }
+
+    case 'SET_EXAM_INTEL': {
+      const intel = { content: action.content, generatedAt: new Date().toISOString() };
+      saveExtraState('examIntel', intel);
+      return { ...state, examIntel: intel };
+    }
+
+    case 'ADD_EXAM_RESULT': {
+      const results = [action.result, ...state.examResults].slice(0, 20);
+      saveExtraState('examResults', results);
+      return { ...state, examResults: results };
     }
 
     case 'RESET_PROGRESS': {
