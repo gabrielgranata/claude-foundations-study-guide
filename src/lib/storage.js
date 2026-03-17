@@ -96,3 +96,20 @@ export function resetAllProgress() {
     localStorage.removeItem(STORAGE_KEY);
   } catch {}
 }
+
+export function loadExtraState(key, defaultValue) {
+  try {
+    const raw = localStorage.getItem(`cca_${key}_v1`);
+    return raw ? JSON.parse(raw) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+}
+
+export function saveExtraState(key, value) {
+  try {
+    localStorage.setItem(`cca_${key}_v1`, JSON.stringify(value));
+  } catch (e) {
+    console.warn(`Failed to save ${key}:`, e);
+  }
+}

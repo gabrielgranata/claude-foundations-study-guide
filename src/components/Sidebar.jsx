@@ -1,16 +1,42 @@
 import { getDueConcepts } from '../lib/sm2.js';
 
-const NAV_ITEMS = [
-  { id: 'dashboard',    label: 'Dashboard',        icon: '▦' },
-  { id: 'study',        label: 'Study Domain',      icon: '◈' },
-  { id: 'scenario',     label: 'Scenario Dive',     icon: '⬡' },
-  { id: 'antipattern',  label: 'Anti-Patterns',     icon: '⚠' },
-  { id: 'review',       label: 'Quick Review',      icon: '↺' },
+const NAV_SECTIONS = [
+  {
+    label: 'Start here',
+    items: [
+      { id: 'curriculum',   label: 'Curriculum',       icon: '⊞' },
+      { id: 'learn',        label: 'Learn Center',      icon: '⊡' },
+    ],
+  },
+  {
+    label: 'Practice',
+    items: [
+      { id: 'study',        label: 'Study Domain',      icon: '◈' },
+      { id: 'scenario',     label: 'Scenario Dive',     icon: '⬡' },
+      { id: 'antipattern',  label: 'Anti-Patterns',     icon: '⚠' },
+    ],
+  },
+  {
+    label: 'Test',
+    items: [
+      { id: 'exam',         label: 'Practice Exam',     icon: '✦' },
+      { id: 'review',       label: 'Quick Review',      icon: '↺' },
+    ],
+  },
+  {
+    label: 'Overview',
+    items: [
+      { id: 'dashboard',    label: 'Dashboard',         icon: '▦' },
+    ],
+  },
 ];
 
 export function Sidebar({ currentView, navigate, state, onApiKeyClick }) {
   const due = getDueConcepts(state.concepts);
   const dueCount = due.length;
+
+  // Count cached references
+  const refCount = Object.keys(state.referenceCache || {}).length;
 
   return (
     <aside className="app-sidebar">
@@ -20,18 +46,27 @@ export function Sidebar({ currentView, navigate, state, onApiKeyClick }) {
       </div>
 
       <nav className="sidebar-nav">
-        <div className="sidebar-section-label">Navigation</div>
-        {NAV_ITEMS.map(item => (
-          <div
-            key={item.id}
-            className={`sidebar-item${currentView === item.id ? ' active' : ''}`}
-            onClick={() => navigate(item.id)}
-          >
-            <span className="sidebar-item-icon">{item.icon}</span>
-            <span className="sidebar-item-label">{item.label}</span>
-            {item.id === 'review' && dueCount > 0 && (
-              <span className="sidebar-item-badge">{dueCount}</span>
-            )}
+        {NAV_SECTIONS.map(section => (
+          <div key={section.label}>
+            <div className="sidebar-section-label">{section.label}</div>
+            {section.items.map(item => (
+              <div
+                key={item.id}
+                className={`sidebar-item${currentView === item.id ? ' active' : ''}`}
+                onClick={() => navigate(item.id)}
+              >
+                <span className="sidebar-item-icon">{item.icon}</span>
+                <span className="sidebar-item-label">{item.label}</span>
+                {item.id === 'review' && dueCount > 0 && (
+                  <span className="sidebar-item-badge">{dueCount}</span>
+                )}
+                {item.id === 'learn' && refCount > 0 && (
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--accent-teal)' }}>
+                    {refCount}
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
         ))}
       </nav>

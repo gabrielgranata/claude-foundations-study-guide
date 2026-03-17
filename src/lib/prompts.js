@@ -66,6 +66,115 @@ Your job:
 Do NOT name the anti-pattern or explain what's wrong. Ask questions that surface the problem through the student's own reasoning.`;
 }
 
+// ── Reference generation ─────────────────────────────────
+
+export function getReferencePrompt(conceptId, conceptDescription, domainName) {
+  return `You are a precise technical reference generator for the CCA (Claude Certified Architect) Foundations exam.
+
+Generate a focused study reference for concept ${conceptId}: "${conceptDescription}"
+Domain: ${domainName}
+
+Structure your response exactly like this (use these headers):
+
+## Definition
+Two to three sentences. What this is, precisely. No fluff.
+
+## The Mechanism
+How it actually works — the underlying machinery. Not the label, the mechanism.
+
+## Why It Matters
+What breaks in production if you get this wrong. Concrete consequences.
+
+## Key Distinctions
+What this is NOT. Common confusions. What's adjacent but different.
+
+## Exam Focus
+What the CCA exam specifically tests about this concept. Where candidates go wrong. Typical trap answers.
+
+## Reference Links
+List 3-5 specific, real docs.anthropic.com URLs directly relevant to this concept. Use your knowledge of the Anthropic documentation structure to provide accurate links. Format as a markdown list.
+
+Total length: under 450 words. Be precise, dense, actionable.`;
+}
+
+export function getExamIntelPrompt() {
+  return `You are synthesizing CCA (Claude Certified Architect) Foundations exam preparation intelligence.
+
+The CCA Foundations exam covers 5 domains:
+- Domain 1: Agentic Architecture & Orchestration (27%)
+- Domain 2: Tool Design & MCP Integration (18%)
+- Domain 3: Claude Code Configuration & Workflows (20%)
+- Domain 4: Prompt Engineering & Structured Output (20%)
+- Domain 5: Context Management & Reliability (15%)
+
+Provide a structured exam prep briefing:
+
+## What the Exam Tests
+Format, approximate question count, question style (scenario-based vs recall), time allocation.
+
+## Highest-Yield Areas
+Based on domain weights and the depth of Anthropic's documentation, which specific concepts are most likely to appear in multiple questions. Be specific — not just "Domain 1" but which concepts within it.
+
+## Community Preparation Patterns
+Based on your knowledge of how practitioners prepare for Anthropic certifications, what study approaches have proven most effective. What do most candidates underestimate?
+
+## Common Failure Modes
+Where candidates lose points even when they understand the material. Anti-pattern questions, edge cases, subtle distinctions the exam probes.
+
+## The 80/20
+If a candidate has 10 hours to prepare, where should those hours go? Ordered by return on investment.
+
+Be specific. Name concepts, not just domains. Cite real documentation sections where relevant. Length: 500-700 words.`;
+}
+
+export function getPracticeQuestionPrompt(domainIds, conceptIds, excludeQuestionTexts = []) {
+  const domainFilter = domainIds?.length > 0
+    ? `Focus on these domains: ${domainIds.join(', ')}.`
+    : 'Draw from any of the 5 domains.';
+
+  const conceptFilter = conceptIds?.length > 0
+    ? `Specifically probe understanding of: ${conceptIds.join(', ')}.`
+    : '';
+
+  const excludeBlock = excludeQuestionTexts.length > 0
+    ? `Do NOT generate questions similar to these already-asked questions:\n${excludeQuestionTexts.slice(-5).map(q => `- ${q.substring(0, 80)}...`).join('\n')}`
+    : '';
+
+  return `You are a CCA (Claude Certified Architect) Foundations exam question generator.
+
+Generate ONE practice exam question. ${domainFilter} ${conceptFilter}
+
+Requirements:
+- Scenario-based, not definition-recall. Present a real architectural situation.
+- 4 answer choices labeled A, B, C, D.
+- One unambiguously correct answer.
+- Three plausible distractors that test understanding vs. surface knowledge. Each distractor should represent a common misconception.
+- A concise explanation (2-3 sentences) for why the correct answer is right AND why each wrong answer fails.
+
+${excludeBlock}
+
+Respond with ONLY valid JSON in exactly this format, no other text:
+{
+  "domain": 1,
+  "concept": "1.1",
+  "question": "...",
+  "choices": {
+    "A": "...",
+    "B": "...",
+    "C": "...",
+    "D": "..."
+  },
+  "correct": "A",
+  "explanation": "...",
+  "distractors": {
+    "A": "why A is wrong if not correct",
+    "B": "why B is wrong if not correct",
+    "C": "why C is wrong if not correct",
+    "D": "why D is wrong if not correct"
+  }
+}`;
+}
+
 export function getReviewPrompt(concept, conceptDescription) {
   return `You are a Socratic study partner running a spaced repetition review for the Claude Certified Architect – Foundations exam.
 
