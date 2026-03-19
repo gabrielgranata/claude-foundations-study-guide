@@ -18,30 +18,85 @@ export const DOMAINS = [
     name: 'Agentic Architecture & Orchestration',
     weight: 27,
     conceptIds: ['1.1','1.2','1.3','1.4','1.5','1.6','1.7','1.8','1.9','1.10'],
+    references: [
+      { title: 'Building Agents — Anthropic Docs', url: 'https://docs.anthropic.com/en/docs/build-with-claude/agentic/overview' },
+      { title: 'Agent SDK', url: 'https://docs.anthropic.com/en/docs/build-with-claude/agentic/agent-sdk' },
+      { title: 'Tool Use Overview', url: 'https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview' },
+    ],
   },
   {
     id: 2,
     name: 'Tool Design & MCP Integration',
     weight: 18,
     conceptIds: ['2.1','2.2','2.3','2.4','2.5','2.6','2.7','2.8'],
+    references: [
+      { title: 'Tool Use Overview — Anthropic Docs', url: 'https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview' },
+      { title: 'Structured Output via Tool Use', url: 'https://docs.anthropic.com/en/docs/build-with-claude/tool-use/structured-output' },
+      { title: 'MCP Introduction', url: 'https://modelcontextprotocol.io/introduction' },
+      { title: 'MCP Specification', url: 'https://spec.modelcontextprotocol.io/' },
+    ],
   },
   {
     id: 3,
     name: 'Claude Code Configuration & Workflows',
     weight: 20,
     conceptIds: ['3.1','3.2','3.3','3.4','3.5','3.6','3.7','3.8','3.9'],
+    references: [
+      { title: 'Claude Code Overview', url: 'https://docs.anthropic.com/en/docs/claude-code/overview' },
+      { title: 'Claude Code Settings & Configuration', url: 'https://docs.anthropic.com/en/docs/claude-code/settings' },
+      { title: 'Claude Code GitHub', url: 'https://github.com/anthropics/claude-code' },
+    ],
   },
   {
     id: 4,
     name: 'Prompt Engineering & Structured Output',
     weight: 20,
     conceptIds: ['4.1','4.2','4.3','4.4','4.5','4.6','4.7','4.8','4.9'],
+    references: [
+      { title: 'Prompt Engineering Overview — Anthropic Docs', url: 'https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview' },
+      { title: 'Structured Output via Tool Use', url: 'https://docs.anthropic.com/en/docs/build-with-claude/tool-use/structured-output' },
+      { title: 'Message Batches API', url: 'https://docs.anthropic.com/en/docs/build-with-claude/message-batches' },
+    ],
   },
   {
     id: 5,
     name: 'Context Management & Reliability',
     weight: 15,
     conceptIds: ['5.1','5.2','5.3','5.4','5.5','5.6','5.7','5.8'],
+    references: [
+      { title: 'Building Agents — Anthropic Docs', url: 'https://docs.anthropic.com/en/docs/build-with-claude/agentic/overview' },
+      { title: 'Prompt Engineering — Long Context', url: 'https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/long-context-tips' },
+    ],
+  },
+];
+
+// ── Official study resources ──────────────────────────
+export const STUDY_RESOURCES = [
+  {
+    section: 'Anthropic Academy (free courses)',
+    links: [
+      { title: 'Claude 101', url: 'https://anthropic.skilljar.com/', description: 'Foundational course — baseline knowledge the exam assumes' },
+      { title: 'Building Applications with the Claude API', url: 'https://anthropic.skilljar.com/', description: '8+ hours — system prompts, tool use, context windows, architecture' },
+      { title: 'Claude Code in Action', url: 'https://anthropic.skilljar.com/claude-code-in-action', description: 'Claude Code config, dev workflows, CI/CD integration' },
+      { title: 'Introduction to Model Context Protocol', url: 'https://anthropic.skilljar.com/', description: 'MCP fundamentals — tools, resources, prompts' },
+    ],
+  },
+  {
+    section: 'Official documentation',
+    links: [
+      { title: 'Anthropic API Docs', url: 'https://docs.anthropic.com/', description: 'Complete API reference' },
+      { title: 'Claude Code Docs', url: 'https://docs.anthropic.com/en/docs/claude-code/overview', description: 'Configuration, commands, skills, CI/CD' },
+      { title: 'MCP Specification', url: 'https://spec.modelcontextprotocol.io/', description: 'Full protocol spec' },
+      { title: 'Anthropic Courses (GitHub)', url: 'https://github.com/anthropics/courses', description: 'Open-source course materials and notebooks' },
+    ],
+  },
+  {
+    section: 'Exam resources',
+    links: [
+      { title: 'Register for the Exam', url: 'https://anthropic.skilljar.com/claude-certified-architect-foundations-access-request', description: 'Skilljar registration portal' },
+      { title: 'Exam Guide (PDF)', url: 'https://everpath-course-content.s3-accelerate.amazonaws.com/instructor%2F8lsy243ftffjjy1cx9lm3o2bw%2Fpublic%2F1773274827%2FClaude+Certified+Architect+%E2%80%93+Foundations+Certification+Exam+Guide.pdf', description: 'Official exam guide — domains, scenarios, format' },
+      { title: 'Claude Partner Network', url: 'https://claude.com/partners', description: 'Free membership — first 5,000 get free exam access' },
+    ],
   },
 ];
 

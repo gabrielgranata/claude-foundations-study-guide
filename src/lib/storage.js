@@ -1,11 +1,10 @@
 // ═══════════════════════════════════════════════════════
-// STORAGE — localStorage management
+// STORAGE — server-backed with localStorage cache
 // ═══════════════════════════════════════════════════════
 
-import { CONCEPTS, DOMAINS } from '../data/knowledge.js';
+import { CONCEPTS } from '../data/knowledge.js';
 
 const STORAGE_KEY = 'cca_study_guide_v1';
-const API_KEY_STORAGE = 'cca_api_key_v1';
 
 function buildInitialConcepts() {
   const concepts = {};
@@ -25,6 +24,60 @@ function buildInitialConcepts() {
   return concepts;
 }
 
+// ── Server sync helpers ───────────────────────────────
+async function serverGet(key) {
+  try {
+    const res = await fetch(`/api/state/${key}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.value;
+  } catch { return null; }
+}
+
+async function serverSet(key, value) {
+  try {
+    await fetch(`/api/state/${key}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value }),
+    });
+  } catch (e) {
+    console.warn('Server sync failed:', e.message);
+  }
+}
+
+async function serverDelete(key) {
+  try {
+    await fetch(`/api/state/${key}`, { method: 'DELETE' });
+  } catch {}
+}
+
+// ── Load from server on startup, fall back to localStorage ──
+export async function loadStateFromServer() {
+  try {
+    const res = await fetch('/api/state');
+    if (!res.ok) throw new Error('server unavailable');
+    const all = await res.json();
+
+    // If server has state, use it and update localStorage cache
+    if (all[STORAGE_KEY]) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(all[STORAGE_KEY]));
+    }
+
+    // Sync extra state keys
+    Object.entries(all).forEach(([k, v]) => {
+      if (k !== STORAGE_KEY) {
+        localStorage.setItem(k, JSON.stringify(v));
+      }
+    });
+
+    return true;
+  } catch {
+    return false; // offline — localStorage only
+  }
+}
+
+// ── Core state ────────────────────────────────────────
 export function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -32,7 +85,6 @@ export function loadState() {
       return { concepts: buildInitialConcepts(), sessions: [] };
     }
     const parsed = JSON.parse(raw);
-    // Ensure all concepts exist (in case new ones added)
     const concepts = parsed.concepts || {};
     Object.keys(CONCEPTS).forEach(id => {
       if (!concepts[id]) {
@@ -49,57 +101,27 @@ export function loadState() {
         };
       }
     });
-    return {
-      concepts,
-      sessions: parsed.sessions || [],
-    };
+    return { concepts, sessions: parsed.sessions || [] };
   } catch {
     return { concepts: buildInitialConcepts(), sessions: [] };
   }
 }
 
 export function saveState(state) {
+  const data = { concepts: state.concepts, sessions: state.sessions };
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      concepts: state.concepts,
-      sessions: state.sessions,
-    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
     console.warn('Failed to save state:', e);
   }
+  // Write-through to server (fire and forget)
+  serverSet(STORAGE_KEY, data);
 }
 
-export function loadApiKey() {
-  try {
-    return localStorage.getItem(API_KEY_STORAGE) || null;
-  } catch {
-    return null;
-  }
-}
-
-export function saveApiKey(key) {
-  try {
-    localStorage.setItem(API_KEY_STORAGE, key);
-  } catch (e) {
-    console.warn('Failed to save API key:', e);
-  }
-}
-
-export function clearApiKey() {
-  try {
-    localStorage.removeItem(API_KEY_STORAGE);
-  } catch {}
-}
-
-export function resetAllProgress() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {}
-}
-
+// ── Extra state (references, chats, exam results) ─────
 export function loadExtraState(key, defaultValue) {
   try {
-    const raw = localStorage.getItem(`cca_${key}_v1`);
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : defaultValue;
   } catch {
     return defaultValue;
@@ -108,8 +130,29 @@ export function loadExtraState(key, defaultValue) {
 
 export function saveExtraState(key, value) {
   try {
-    localStorage.setItem(`cca_${key}_v1`, JSON.stringify(value));
+    if (value === null) {
+      localStorage.removeItem(key);
+      serverDelete(key);
+    } else {
+      localStorage.setItem(key, JSON.stringify(value));
+      serverSet(key, value);
+    }
   } catch (e) {
     console.warn(`Failed to save ${key}:`, e);
   }
+}
+
+export function resetAllProgress() {
+  try {
+    // Clear all cca_ keys from localStorage
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('cca_') || k === STORAGE_KEY)) keys.push(k);
+    }
+    keys.forEach(k => {
+      localStorage.removeItem(k);
+      serverDelete(k);
+    });
+  } catch {}
 }

@@ -4,6 +4,8 @@ import { getAntiPatternPrompt } from '../lib/prompts.js';
 import { ConversationInterface } from './ConversationInterface.jsx';
 import { PostSessionReview } from './PostSessionReview.jsx';
 
+import { loadExtraState, saveExtraState } from '../lib/storage.js';
+
 // Simple syntax highlighting for Python/text without Prism dependency issues
 function CodeHighlight({ code, language }) {
   if (language !== 'python') {
@@ -137,13 +139,18 @@ export function AntiPatternDrills({ state, dispatch, navigate, params }) {
   const [sessionId] = useState(() => Date.now());
 
   const ap = ANTI_PATTERNS.find(p => p.id === selectedId);
+  const chatKey = selectedId ? `chat_ap-${selectedId}` : null;
+  const hasSavedSession = chatKey ? !!loadExtraState(chatKey, null) : false;
 
   function handleRandom() {
     const idx = Math.floor(Math.random() * ANTI_PATTERNS.length);
     setSelectedId(ANTI_PATTERNS[idx].id);
   }
 
-  function handleStartDrill() {
+  function handleStartDrill(resume = false) {
+    if (!resume && chatKey) {
+      saveExtraState(chatKey, null);
+    }
     const updates = {};
     ap.relatedConcepts.forEach(id => {
       if ((state.concepts[id]?.stage || 'UNSEEN') === 'UNSEEN') {
@@ -218,8 +225,13 @@ export function AntiPatternDrills({ state, dispatch, navigate, params }) {
                 <button className="btn btn-secondary" onClick={handleRandom}>
                   Random
                 </button>
-                <button className="btn btn-primary" onClick={handleStartDrill}>
-                  Begin Drill →
+                {hasSavedSession && (
+                  <button className="btn btn-primary" onClick={() => handleStartDrill(true)}>
+                    Resume →
+                  </button>
+                )}
+                <button className={`btn ${hasSavedSession ? 'btn-secondary' : 'btn-primary'}`} onClick={() => handleStartDrill(false)}>
+                  {hasSavedSession ? 'New Drill' : 'Begin Drill →'}
                 </button>
               </div>
             </div>
@@ -260,6 +272,7 @@ export function AntiPatternDrills({ state, dispatch, navigate, params }) {
             {/* Conversation */}
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--border)' }}>
               <ConversationInterface
+                sessionKey={`ap-${selectedId}`}
                 systemPrompt={ap ? getAntiPatternPrompt(ap) : ''}
                 initialMessage={`The student has been shown the ${ap?.id} code snippet. Ask them what they see — what's wrong with this code?`}
                 onCommand={handleCommand}

@@ -1,4 +1,4 @@
-import { DOMAINS, CONCEPTS, STAGES, CURRICULUM_MODULES } from '../data/knowledge.js';
+import { DOMAINS, CONCEPTS, STAGES, CURRICULUM_MODULES, STUDY_RESOURCES } from '../data/knowledge.js';
 import { getDueConcepts, formatNextReview } from '../lib/sm2.js';
 import { ConceptRow, StageSymbol } from './ConceptBadge.jsx';
 
@@ -306,6 +306,34 @@ export function Dashboard({ state, navigate }) {
                 </div>
               ))
             )}
+          </div>
+        </div>
+
+        {/* Study Resources */}
+        <div style={{ marginTop: '24px' }}>
+          <div className="cell-label" style={{ marginBottom: '12px' }}>Official Study Resources</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {STUDY_RESOURCES.map(section => (
+              <div key={section.section}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--accent-gold)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '8px' }}>
+                  {section.section}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {section.links.map(link => (
+                    <a
+                      key={link.url}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '6px 10px', background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', textDecoration: 'none', gap: '12px' }}
+                    >
+                      <span style={{ fontSize: '12px', color: 'var(--accent-teal)' }}>{link.title}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', flexShrink: 0 }}>{link.description}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

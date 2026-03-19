@@ -5,6 +5,8 @@ import { ConversationInterface } from './ConversationInterface.jsx';
 import { PostSessionReview } from './PostSessionReview.jsx';
 import { ConceptRow, StageSymbol } from './ConceptBadge.jsx';
 
+import { loadExtraState, saveExtraState } from '../lib/storage.js';
+
 function DomainPicker({ domains, concepts, selectedId, onSelect }) {
   return (
     <div style={{ padding: '20px 24px', flex: 1, overflowY: 'auto' }}>
@@ -94,9 +96,13 @@ export function StudyDomain({ state, dispatch, navigate, params }) {
   const [sessionId] = useState(() => Date.now());
 
   const domain = DOMAINS.find(d => d.id === selectedDomainId);
+  const chatKey = selectedDomainId ? `chat_study-d${selectedDomainId}` : null;
+  const hasSavedSession = chatKey ? !!loadExtraState(chatKey, null) : false;
 
-  function handleStartSession() {
-    // Mark all domain concepts as at least ENCOUNTER if UNSEEN
+  function handleStartSession(resume = false) {
+    if (!resume && chatKey) {
+      saveExtraState(chatKey, null);
+    }
     const updates = {};
     domain.conceptIds.forEach(id => {
       if ((state.concepts[id]?.stage || 'UNSEEN') === 'UNSEEN') {
@@ -106,7 +112,6 @@ export function StudyDomain({ state, dispatch, navigate, params }) {
     if (Object.keys(updates).length > 0) {
       dispatch({ type: 'UPDATE_CONCEPTS_BATCH', updates });
     }
-
     setConceptsTouched(domain.conceptIds);
     setSessionActive(true);
   }
@@ -180,9 +185,16 @@ export function StudyDomain({ state, dispatch, navigate, params }) {
                   {domain?.name}
                 </div>
               </div>
-              <button className="btn btn-primary" onClick={handleStartSession}>
-                Begin Session →
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {hasSavedSession && (
+                  <button className="btn btn-primary" onClick={() => handleStartSession(true)}>
+                    Resume →
+                  </button>
+                )}
+                <button className={`btn ${hasSavedSession ? 'btn-secondary' : 'btn-primary'}`} onClick={() => handleStartSession(false)}>
+                  {hasSavedSession ? 'New Session' : 'Begin Session →'}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -209,6 +221,7 @@ export function StudyDomain({ state, dispatch, navigate, params }) {
         <div className="session-layout" style={{ flex: 1, overflow: 'hidden' }}>
           <div className="session-main">
             <ConversationInterface
+              sessionKey={`study-d${selectedDomainId}`}
               systemPrompt={domain ? getStudyPrompt(domain) : ''}
               initialMessage={`Begin a domain study session for "${domain?.name}". Present an opening scenario that creates an encounter with one of the core concepts in this domain.`}
               onCommand={handleCommand}

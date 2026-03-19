@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { callClaude, compactMessages } from '../lib/api.js';
+import { loadExtraState, saveExtraState } from '../lib/storage.js';
 
 const COMMANDS = ['status', 'done'];
 
@@ -44,17 +45,29 @@ export function ConversationInterface({
   onConceptTouch,
   sessionActive,
   onEndSession,
+  sessionKey,
 }) {
-  const [messages, setMessages] = useState([]);
+  // Restore saved session if sessionKey provided
+  const saved = sessionKey ? loadExtraState(`chat_${sessionKey}`, null) : null;
+
+  const [messages, setMessages] = useState(saved?.messages || []);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState('');
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(!!saved);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
-  // API conversation history (without timestamps/meta)
-  const conversationRef = useRef([]);
+  const conversationRef = useRef(saved?.apiMessages || []);
+
+  // Persist conversation on every change
+  function persist(displayMsgs, apiMsgs) {
+    if (!sessionKey) return;
+    saveExtraState(`chat_${sessionKey}`, {
+      messages: displayMsgs,
+      apiMessages: apiMsgs,
+    });
+  }
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -88,9 +101,11 @@ export function ConversationInterface({
       const assistantMsg = { role: 'assistant', content: response };
       conversationRef.current.push(assistantMsg);
 
-      setMessages([
+      const newMsgs = [
         { role: 'assistant', content: response, timestamp: Date.now() },
-      ]);
+      ];
+      setMessages(newMsgs);
+      persist(newMsgs, conversationRef.current);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -158,10 +173,14 @@ export function ConversationInterface({
       const assistantMsg = { role: 'assistant', content: response };
       conversationRef.current.push(assistantMsg);
 
-      setMessages(prev => [
-        ...prev,
-        { role: 'assistant', content: response, timestamp: Date.now() },
-      ]);
+      setMessages(prev => {
+        const updated = [
+          ...prev,
+          { role: 'assistant', content: response, timestamp: Date.now() },
+        ];
+        persist(updated, conversationRef.current);
+        return updated;
+      });
     } catch (err) {
       setError(err.message);
       // Remove the user message from API history if it failed

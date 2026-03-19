@@ -4,6 +4,8 @@ import { getScenarioPrompt } from '../lib/prompts.js';
 import { ConversationInterface } from './ConversationInterface.jsx';
 import { PostSessionReview } from './PostSessionReview.jsx';
 
+import { loadExtraState, saveExtraState } from '../lib/storage.js';
+
 function ScenarioPicker({ scenarios, selectedId, onSelect }) {
   return (
     <div style={{ padding: '20px 24px', flex: 1, overflowY: 'auto' }}>
@@ -98,9 +100,13 @@ export function ScenarioDeepDive({ state, dispatch, navigate, params }) {
   const [sessionId] = useState(() => Date.now());
 
   const scenario = SCENARIOS.find(s => s.id === selectedId);
+  const chatKey = selectedId ? `chat_scenario-${selectedId}` : null;
+  const hasSavedSession = chatKey ? !!loadExtraState(chatKey, null) : false;
 
-  function handleStartSession() {
-    // Mark key concepts as ENCOUNTER if UNSEEN
+  function handleStartSession(resume = false) {
+    if (!resume && chatKey) {
+      saveExtraState(chatKey, null);
+    }
     const updates = {};
     scenario.keyConcepts.forEach(id => {
       if ((state.concepts[id]?.stage || 'UNSEEN') === 'UNSEEN') {
@@ -172,9 +178,16 @@ export function ScenarioDeepDive({ state, dispatch, navigate, params }) {
                   {scenario?.name}
                 </div>
               </div>
-              <button className="btn btn-primary" onClick={handleStartSession}>
-                Begin Deep Dive →
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {hasSavedSession && (
+                  <button className="btn btn-primary" onClick={() => handleStartSession(true)}>
+                    Resume →
+                  </button>
+                )}
+                <button className={`btn ${hasSavedSession ? 'btn-secondary' : 'btn-primary'}`} onClick={() => handleStartSession(false)}>
+                  {hasSavedSession ? 'New Session' : 'Begin Deep Dive →'}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -202,6 +215,7 @@ export function ScenarioDeepDive({ state, dispatch, navigate, params }) {
         <div className="session-layout" style={{ flex: 1, overflow: 'hidden' }}>
           <div className="session-main">
             <ConversationInterface
+              sessionKey={`scenario-${selectedId}`}
               systemPrompt={scenario ? getScenarioPrompt(scenario) : ''}
               initialMessage={`Begin the scenario deep dive for "${scenario?.name}". Present the initial high-level requirement incrementally.`}
               onCommand={handleCommand}

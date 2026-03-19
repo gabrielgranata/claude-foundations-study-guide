@@ -389,6 +389,26 @@ export function LearnCenter({ state, dispatch, navigate }) {
                 <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                   {domain.conceptIds.length} concepts · Click "Generate Reference" to create a study note for each concept, or click the concept row to expand/collapse.
                 </div>
+                {domain.references && domain.references.length > 0 && (
+                  <div style={{ marginTop: '12px', padding: '10px 12px', background: 'var(--bg-panel-alt)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                      Official Documentation
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {domain.references.map(ref => (
+                        <a
+                          key={ref.url}
+                          href={ref.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '11px', color: 'var(--accent-teal)', textDecoration: 'none', padding: '3px 8px', background: 'var(--accent-teal-dim)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(90,200,216,0.15)' }}
+                        >
+                          {ref.title} ↗
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
